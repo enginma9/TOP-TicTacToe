@@ -1,0 +1,186 @@
+:root{
+    --color: #ffffff;
+    --character-width: min(10vh,10vw);
+    --character-height: min(10vh,10vw);
+    --slot-size: min(20vh, 20vw);
+    --text-size: min(2vh,2vw);
+    --border-radius: min(2.5vh, 2.5vw);
+    --board-colors: rgb(86, 101, 101);
+    --mind-the-gap: min(1vh,1vw);
+}
+
+html, body{
+    height: 99%;
+    width: 99%;
+}
+
+body{
+    background-image: url(img/queensNight.png); /*radial-gradient( rgb(51, 53, 64), rgb(49, 47, 92), rgb(29, 29, 70));*/
+    background-position: center;
+    background-size: cover;
+    background-attachment: fixed;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    align-items: center;
+    color: var(--color);
+    font-size: var(--text-size);
+}
+
+a, a:hover, a:focus{
+    color: var(--color);
+    text-decoration: none;
+    -webkit-transition: 300ms linear 0s;
+    -moz-transition: 300ms linear 0s;
+    -o-transition: 300ms linear 0s;
+    transition: 300ms linear 0s;
+    outline: 0 none;
+}
+a:hover, a:focus{
+    text-shadow: -1px 1px 8px rgb(0, 0, 255), 1px -1px 8px rgb(255, 0, 0);
+}
+
+h1{
+    font-size: min( 3vh, 3vw);
+}
+
+.select, .select:focus, .select:hover, .character, .characters, .window{
+    -webkit-transition: 300ms linear 0s;
+    -moz-transition: 300ms linear 0s;
+    -o-transition: 300ms linear 0s;
+    transition: 300ms linear 0s;
+}
+.select:hover, .select:focus{
+    box-shadow: calc(var(--mind-the-gap)*-.5) 0 calc(var(--mind-the-gap)*.5) blue,
+                0 calc(var(--mind-the-gap)*.5) calc(var(--mind-the-gap)*.5) red;
+    transform: translate( var(--mind-the-gap), calc(var(--mind-the-gap)*-1) );
+}
+.hit:hover, .hit:focus{
+    box-shadow: inset 0 0 10vh 1vh rgba(8, 8, 8, 0.817),
+                calc(var(--mind-the-gap)*.5) 0 calc(var(--mind-the-gap)*.5) black,
+                0 calc(var(--mind-the-gap)*.5) calc(var(--mind-the-gap)*.5) black;
+    transform: translate( calc( var(--mind-the-gap) * -1), calc(var(--mind-the-gap) * -1) );
+}
+
+
+.title{
+    background-color: red;
+    color: white;
+    border: 1px solid blue;
+    border-radius: 4vh;
+    padding: 2vh;
+    text-shadow: 1px 1px 1px #000000;
+    box-shadow: inset 0 0 10vh 1vh rgba(8, 8, 8, 0.817),
+        1px 1px 5px #000000;
+}
+
+.board-area{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    align-items: center;
+    }
+
+.characters{
+    margin: min(2vh,2vw);
+    background-color: var(--board-colors);
+    border-radius: var(--border-radius);
+    display: flex;
+    flex-direction: column;
+    gap: var(--mind-the-gap);
+    padding: var(--mind-the-gap);
+}
+.character{
+    height: var(--character-height);
+    width: var(--character-width);
+    background-size: cover;
+    background-position: center;
+    border-radius: var(--border-radius);
+}
+#cosmic{
+    background-image: url(img/CosmicMask.png);
+}
+#morales{
+    background-image: url(img/MilesMask.png);
+}
+#gwen{
+    background-image: url(img/GwenMask.png);
+}
+#spidey{
+    background-image: url(img/SpideyMask.png);
+}
+#black-cat-select{
+    background-image: url(img/BlackCat.png);
+}
+#venom-select{
+    background-image: url(img/Venom.png);
+}
+#sandman-select{
+    background-image: url(img/Sandman.png);
+}
+#goblin-select{
+    background-image: url(img/Goblin.png);
+}
+.board, .prompt{
+    box-shadow: inset 0 0 10vh 1vh rgba(8, 8, 8, 0.817);
+}
+
+.board{
+    display: grid;
+    gap:1vh;
+    padding: 1vh;
+    border-radius: var(--border-radius);
+    grid-template-columns: var(--slot-size) var(--slot-size) var(--slot-size);
+    grid-template-rows: var(--slot-size) var(--slot-size) var(--slot-size);
+    background-color: var(--board-colors);
+}
+
+.window{
+    width: var(--slot-size);
+    height: var(--slot-size);
+    background-size: cover;
+    background-position: center;
+    border-radius: var(--border-radius);
+}
+.empty{
+    background-image: url(img/Glass.png);
+}
+.cosmic{
+    background-image: url(img/Cosmic-Spider-Nodes.png);
+}
+.morales{
+    background-image: url(img/morales.png);
+}
+.gwen{
+    background-image: url(img/GwenMid.png);
+}
+.spidey{
+    background-image: url(img/Spider1.png);
+}
+.oh{
+    background-image: url(img/O.png);
+}
+
+.hide-me{
+    display: none;
+}
+.hidden{
+    visibility: hidden;
+}
+.footer, #prompt,.characters{
+    box-shadow: 1px 1px 5px #000000;
+}
+.footer, #prompt{
+    background-color: var(--board-colors);
+    color: var(--color);
+    border-radius: var(--border-radius);
+    padding: var(--mind-the-gap)
+}
+#prompt{
+    min-height: var(--character-height); 
+    min-width: min(50vh, 50vw);
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    align-items: center;
+}
