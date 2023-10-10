@@ -7,6 +7,10 @@ function type() {
     }
 }
 
+function rando( numberOfOptions=6 ){
+    return Math.floor(Math.random()*numberOfOptions)
+}
+
 "What a good day.  No Spiderman in sight..."
 "the enemy got the drop on you"
 "Its public enemy number one, Spider-Man!"

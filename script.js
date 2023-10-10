@@ -1,5 +1,3 @@
-import rando from "./modules/rando.js"
-
 const cosmic = 0;
 const morales = 1;
 const gwen = 2;
