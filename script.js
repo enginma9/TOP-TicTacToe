@@ -1,44 +1,19 @@
-/*
-
-Jonah appears,
-type: "What a good day.  No Spiderman in sight..."
-
-"Pick your hero"
-
-event listeners on spidey-heads will check whether they have permission to go or not
-set this to true
-
-select spider-hero -> computer randomly selects villain
-set spidey-heads to false, hide characters but the ones selected, remove "select" class.
-
-Remove windows from board, set up array, divs(.select), and event listeners
-
-Hide Jonah, flip coin, 
-    if enemy goes first, print out, "the enemy got the drop on you"
-    otherwise, "We need to protect the city from {enemy-name}"
-    or
-    Look, its public enemy number one!
-
-When the enemy damages the building:
-    apply .hit to window for .3s then remove and change .empty to .oh
-    Jonah reappears, with some complaint
-        Everything Spider-Man touches comes to ruin!
-    
-Hero wins:
-    Spider-Man, he's a menace!
-    
-Hero loses:
-    Jonah Jameson --the man who destroyed Spider-Man!
-    Spider-Man... a cowardly quitter.
-
- */
+import rando from "./modules/rando.js"
 
 const cosmic = 0;
 const morales = 1;
 const gwen = 2;
 const spidey =3;
 
-const win_conditions = [
+const venom = 0;
+const sandman = 1;
+const blackCat = 2;
+const goblin = 3;
+
+const hero = "X";
+const vill = "O";
+
+const win_conditions2d = [
     [0,1,2],
     [3,4,5],
     [6,7,8],
@@ -56,7 +31,6 @@ function createObject( type='div', id="", classes=[]){
     console.log('Creating object: type:', type, " id:", id );
     return object;
 }
-
 function createLink({ text="A Link", address="https://google.com", classes=[], id="" }){
     const newLink = document.createElement( 'a' );
     if( id!=""){
@@ -69,15 +43,122 @@ function createLink({ text="A Link", address="https://google.com", classes=[], i
     newLink.rel = "noreferrer noopener";
     return newLink;
 }
-
 function appendChildren({ parent, children=[]}){
     children.forEach((child) => {
         parent.appendChild( child )
     });
 
 }
+function clearElement(item){
+    var first = item.firstElementChild;
+    while(first){
+        first.remove();
+        first = item.firstElementChild;
+    }
+}
 
-class PageTemplate {
+function winning( board, player ){
+    let test = false;
+    win_conditions2d.forEach( ( condition ) => {
+        if( board[ condition[0] ] == player && board[ condition[1] ] == player && board[ condition[2] ] == player ){
+            test = true; 
+        } 
+    });
+    return test;
+}
+
+class villain{
+    constructor(  ){
+        self.difficulty = goblin;
+
+    }
+
+    setDifficulty( difficulty ){
+        self.difficulty = difficulty;
+    }
+
+    play( board ){
+        let villainSelect; 
+        
+        if( this.difficulty == venom ){
+            villainSelect = this.playMiniMax({ thisBoard:board, thisPlayer:vill, desiredDepth:4 }).index;
+        }else if( this.difficulty == blackCat ){
+            villainSelect = this.playMiniMax({ thisBoard:board, thisPlayer:vill, desiredDepth:2 }).index;
+        }else if( this.difficulty == sandman ){
+            villainSelect = this.playMiniMax({ thisBoard:board, thisPlayer:vill, desiredDepth:1 }).index;
+        }else{
+            villainSelect = this.randomPlay( board );
+        }
+    }
+
+
+
+    randomPlay( board ){
+        let optionList = this.findEmpties( board );
+        return optionList[ rando( optionList.length ) ]
+    }
+
+    findEmpties( board ){
+        return  board.filter( slot => slot != "O" && slot != "X");
+    }
+
+    playMiniMax({ thisBoard, thisPlayer, desiredDepth=Infinity, currentDepth=0 }){
+        let newDepth = currentDepth + 1;
+        let availableSlots = this.findEmpties( thisBoard ); 
+        if( winning( thisBoard, hero )){    
+            return { score:-10 };           
+        }else if( winning( thisBoard, vill )){ 
+            if( currentDepth < 2 ){
+                return{ score:100 };             
+            }else{
+                return{ score:10 };             
+            }
+        }else if( availableSlots.length===0 || desiredDepth === currentDepth ){  
+            return { score:0 };
+        }
+        let moves = [];
+        for( let i = 0; i < availableSlots.length; i++ ){
+            let move = {};                  
+            move.index = thisBoard[ availableSlots[i] ];
+            thisBoard[ availableSlots[i] ] = thisPlayer;
+    
+            if( thisPlayer == vill ){
+                let result = this.playMiniMax({ thisBoard:[...thisBoard], thisPlayer:hero, desiredDepth:desiredDepth, currentDepth:newDepth });
+                move.score = result.score;
+            }else{
+                let result = this.playMiniMax({ thisBoard:[...thisBoard], thisPlayer:vill, desiredDepth:desiredDepth, currentDepth:newDepth });
+                move.score = result.score;
+            }
+            thisBoard[ availableSlots[i] ] = move.index;
+            moves.push( move );
+        }
+        let bestMove;
+        if( thisPlayer = villain ){ 
+            let bestScore = -10000;
+            for( i = 0; i< moves.length; i++ ){
+                if( moves[i].score > bestScore ){
+                    bestScore = moves[i].score;
+                    bestMove = i;
+                }
+            }
+        }else{  
+            let bestScore = 10000;
+            for( i = 0; i< moves.length; i++ ){
+                if(moves[i].score < bestScore){
+                    bestScore = moves[i].score;
+                    bestMove = i;
+                }
+            }
+        }
+        return moves[ bestMove ];
+    } // end playMiniMax
+}
+
+
+
+
+
+class gameTemplate {
     constructor(){
         clearElement(document.body);
         this.header = createObject( 'h1', "gameTitle", ["title", "transition-item"] );
@@ -108,10 +189,10 @@ class PageTemplate {
         this.heroSelectArray[gwen] = createObject( 'div', "gwen", ["character", "transition-item", "select"] ) ;
         this.heroSelectArray[spidey] = createObject( 'div', "spidey", ["character", "transition-item", "select"] ) ;
 
-        this.villainSelectArray[0] = createObject( 'div', "venom-select", ["character", "transition-item"] );
-        this.villainSelectArray[1] = createObject( 'div', "sandman-select", ["character", "transition-item"] );
-        this.villainSelectArray[2] = createObject( 'div', "black-cat-select", ["character", "transition-item"] );
-        this.villainSelectArray[3] = createObject( 'div', "goblin-select", ["character", "transition-item"] );
+        this.villainSelectArray[venom] = createObject( 'div', "venom-select", ["character", "transition-item"] );
+        this.villainSelectArray[sandman] = createObject( 'div', "sandman-select", ["character", "transition-item"] );
+        this.villainSelectArray[blackCat] = createObject( 'div', "black-cat-select", ["character", "transition-item"] );
+        this.villainSelectArray[goblin] = createObject( 'div', "goblin-select", ["character", "transition-item"] );
 
         for( let i=0; i<4; i++ ){
             this.heroSelect.appendChild( this.heroSelectArray[i] );
@@ -127,9 +208,10 @@ class PageTemplate {
         document.body.appendChild( this.boardArea );
 
         this.footer = createObject( 'div', "footer", [ "footer" ]);
-        this.creatorLink = createLink({ text:"ENGINMA9", address:"https://google.com", classes:[], id:"" });
-        this.githubLink = createLink({ text:"GH", address:"https://google.com", classes:[], id:"" });
-        this.odinLink = createLink({ text:"TOP", address:"https://google.com", classes:[], id:"" });
+        this.creatorLink = createLink({ text:"ENGINMA9", address:"https://enginma9.github.io/", classes:[], id:"" });
+        this.githubLink = createLink({ text:"GH", address:"https://github.com/enginma9/TOP-TicTacToe", classes:[], id:"" });
+        this.odinLink = createLink({ text:"TOP", address:"https://www.theodinproject.com/lessons/node-path-javascript-tic-tac-toe", classes:[], id:"" });
+        this.likeMe = createLink({ text:"LIKE ME", address:"https://www.theodinproject.com/lessons/node-path-javascript-tic-tac-toe/project_submissions", classes:[], id:"" });
         this.backgroundLink = createLink({ text:"BACKGROUND", address:"https://unsplash.com/@mroz?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash", classes:[], id:"" });
         this.headsLink = createLink({ text:"HEADS", address:"https://scottfarrisdesign.wordpress.com/2013/08/06/spider-man-doodle-heads/", classes:[], id:"" });
         appendChildren({ parent:this.footer, children:[ 
@@ -139,79 +221,44 @@ class PageTemplate {
             document.createTextNode(" - "),
             this.odinLink,
             document.createTextNode(" - "),
+            this.likeMe,
+            document.createTextNode(" - "),
             this.backgroundLink,
             document.createTextNode(" - "),
             this.headsLink
         ]});
-        //this.footer.appendChild( this.creatorLink );
         document.body.appendChild( this.footer );
-
+        //this.damageWindows( this.windowArray[1] );
     }
     
     showJonah(){
         this.jonah.classList.remove('hide-me');
     }
+    hideJonah(){
+        this.jonah.classList.add('hide-me');
+    }
 
-    buildWindows(  ){
+    buildWindows(){
         for( let i=0; i<9; i++){
             this.windowArray[i] = createObject( "div", i, [ "window","empty", "transition-item" ] );
             this.building.appendChild( this.windowArray[i] );
         }       
     }
-}
-
-function buildWindows(){
-    board = createObject("div", "board", ["board"]);
-    for(i=0;i<9;i++){
-        windowArray[i] = document.createElement('div', { id: i }); //document.createElement('div', { id: i });
-        windowArray[i].classList.add( "window", "empty" );
-        board.appendChild( windowArray[i] );
+    damageWindows( window ){    // pass villain.
+        window.classList.add( "hit" );
+        setTimeout( function(){ 
+            window.classList.add( "oh" )
+            window.classList.remove( "hit" ) 
+        }, "300" );
+        console.log("damage");
     }
-    document.body.appendChild( board );
-}
-function repairWindows(){
-    for(i=0;i<9;i++){
-        windowArray[i].className = "" ;
-        windowArray[i].classList.add( "window", "empty" );
-        board.appendChild( windowArray[i] );
-    }
-}
+} // end class
 
-function buildCharacters(){
-    for(i=0;i<4;i++){
-        characterArray[i]
-    }
-}
-
-function showWindows(){
-
-}
-
-function clearWindows(){
-    var first = board.firstElementChild;
-    while(first){
-        first.remove();
-        first = board.firstElementChild;
-    }
-}
-
-//
-
-function clearElement(item){
-    var first = item.firstElementChild;
-    while(first){
-        first.remove();
-        first = item.firstElementChild;
-    }
-}
-
-
-
-const page = new PageTemplate;
+const game = new gameTemplate;
 /*
 window.onload = function(){
-    buildPage();
-    clearWindows();
-    buildWindows();
 }
 */
+// page, or game class
+// ai, or villain class
+// 
