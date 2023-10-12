@@ -174,7 +174,7 @@ class gameTemplate {
         this.creatorLink = createLink({ text:"ENGINMA9", address:"https://enginma9.github.io/", classes:[], id:"" });
         this.githubLink = createLink({ text:"GH", address:"https://github.com/enginma9/TOP-TicTacToe", classes:[], id:"" });
         this.odinLink = createLink({ text:"TOP", address:"https://www.theodinproject.com/lessons/node-path-javascript-tic-tac-toe", classes:[], id:"" });
-        this.likeMe = createLink({ text:"LIKE ME", address:"https://www.theodinproject.com/lessons/node-path-javascript-tic-tac-toe/project_submissions", classes:[], id:"" });
+        this.likeMe = createLink({ text:"LIKE ME", address:"https://www.theodinproject.com/lessons/node-path-javascript-tic-tac-toe/project_submissions#project_submission_155216", classes:[], id:"" });
         this.backgroundLink = createLink({ text:"BACKGROUND", address:"https://unsplash.com/@mroz?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash", classes:[], id:"" });
         this.headsLink = createLink({ text:"HEADS", address:"https://scottfarrisdesign.wordpress.com/2013/08/06/spider-man-doodle-heads/", classes:[], id:"" });
         appendChildren({ parent:this.footer, children:[ 
