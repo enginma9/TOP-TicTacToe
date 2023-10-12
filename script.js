@@ -53,11 +53,14 @@ class villain{
         if( winning( thisBoard, hero )){    
             return { score:-10 };           
         }else if( winning( thisBoard, vill )){ 
+            /*
             if( currentDepth < 2 ){
                 return{ score:100 };             
             }else{
                 return{ score:10 };             
             }
+            */
+            return{ score:10 };
         }else if( availableSlots.length===0 || desiredDepth === currentDepth ){  
             return { score:0 };
         }
@@ -121,7 +124,13 @@ class gameTemplate {
         this.jonah.src = "img/Jonah.png";
 
         this.promptBox.appendChild( this.jonah );
-        this.actionPrompt.appendChild( document.createTextNode("Prevent enemy from gettng 3 in a row, causing structural collapse.") );
+        this.promptLine1 = createObject( "span", "line-1", [ "transistion-item" ] );
+        this.promptLine2 = createObject( "span", "line-2", [ "transistion-item" ] );
+
+        this.promptLine1.appendChild( document.createTextNode("Prevent enemy from gettng 3 in a row, causing structural collapse.") );
+        this.promptLine2.appendChild( document.createTextNode( "Click here to start." ));
+        appendChildren({ parent:this.actionPrompt, children:[ this.promptLine1, this.promptLine2 ] });
+        
         this.promptBox.appendChild( this.actionPrompt );       
         this.promptBox.addEventListener( "click", this.promptBoxClicked, false );
         document.body.appendChild( this.promptBox);
@@ -206,45 +215,57 @@ class gameTemplate {
             this.building.appendChild( window );
         });
     }
+
     windowClicked( event ){
         console.log( "Clicked window:", event.currentTarget.id );
         let window = event.currentTarget;
-        if( game.isEnabled( window ) ){//if( event.currentTarget.classList.contains("select") ){
-            console.log( "playable" );
+        if( game.isEnabled( window ) ){
             game.protectWindow( Number(window.id) );
             if( winning( game.slots, hero ) ){
                 console.log( 'You saved the building and captured the villain.');
-                game.gameOver();
-            }else if( winning( game.slots, vill ) ){
-                console.log( 'Tragedy struck today.' );
+                game.setPrompt( 'You saved the building and captured '.concat( game.Villain.getName() ), "Click to reset" );
                 game.gameOver();
             }else if( game.Villain.findEmpties( [...game.slots] ).length < 1 ){
+                // tied
                 console.log("Well, the building's still standing.");
+                game.setPrompt( "", "Click to reset" );
+                game.gameOver();
+            }else{ // continue game
+                game.villainsTurn();
+            }
+            if( winning( game.slots, vill ) ){
+                console.log( 'Tragedy struck today.' );
+                game.showJonah();
+                game.setPrompt( "\"Spider-Man, he's a menace!\"", "Click to reset" );
+                game.gameOver();
+            }else if( game.Villain.findEmpties( [...game.slots] ).length < 1 ){
+                // tied
+                console.log("Well, the building's still standing.");
+                game.setPrompt( "", "Click to reset" );
                 game.gameOver();
             }else{
-                let x = game.Villain.play( [...game.slots] );
-                console.log( game.Villain.getName(), "plays", x );
-                game.slots[x] = vill;
-                game.damageWindows( game.windowArray[x] );
+                // continue game
             }
-            
         }
     }
     
-    whosWinning(){
-        if( winning( game.slots, hero ) ){
-            console.log( 'You saved the building and captured the villain.');
-        }else if( winning( game.slots, vill ) ){
-            console.log( 'Tragedy struck today.' )
-        }else if( game.Villain.findEmpties( [...game.slots] ).length < 1 ){
-
-        }
+    setPrompt( text1, text2 ){
+        game.promptLine1.innerText = text1 ;
+        game.promptLine2.innerText = text2 ;
     }
+
+    villainsTurn(){
+        let x = game.Villain.play( [...game.slots] );
+                console.log( game.Villain.getName(), "plays", x );
+                game.slots[x] = vill;
+                game.damageWindows( game.windowArray[x] );
+    }
+
     promptBoxClicked( event ){
         if( game.isEnabled( event.currentTarget ) ){//if( this.promptBox.classList.contains("select") ){
             if( game.gameInProgress == true ){
                 game.resetGame();
-                console.log( "In Progress? ", game.gameInProgress, ", Reset");
+                //console.log( "In Progress? ", game.gameInProgress, ", Reset");
             }else{
                 game.turnOff( this.promptBox ) ;
                 //console.log("Select Hero");
@@ -256,15 +277,13 @@ class gameTemplate {
         }
     }
     selectYourHero(){
-        // turns off everything, then enables all heroes
+        game.showJonah();
+        game.setPrompt( "\"What a good day.  No Spiderman in sight...\"" , "Select your hero." );
         console.log("Select your hero");
         this.turnOff();
         this.turnOnItems( this.heroSelectArray );
     }
     heroClicked( event ){
-        // set current hero string to corresponding class string
-        // remove select from all heroes, add select to all villains
-        // hide all but selected hero
         if( game.isEnabled( event.currentTarget) ){
             game.setHero( event.currentTarget.id );
         }else{
@@ -293,28 +312,31 @@ class gameTemplate {
         game.windowArray[num].classList.add( game.heroMarkerClass );
         game.slots[num] = hero;
     }
-    // ?
-    userPlay(){
-        // event listener response
-    }
+
     startGame( name ){
         // if game not in progress, reset board and set game to in-progress
         game.hideExcept( game.villainSelectArray, name );
         game.turnOff( game.villainSelectArray );
         if( name == "venom-select" ){
             game.Villain.setDifficulty( venom, "Venom" ); 
-            
         }else if( name == "sandman-select" ){
             game.Villain.setDifficulty( sandman, "Sandman" ); 
         }else if( name == "black-cat-select" ){
             game.Villain.setDifficulty( blackCat, "Black Cat" ); 
         }else{
-            game.Villain.setDifficulty( goblin, "Goblin" );
+            game.Villain.setDifficulty( goblin, "Green Goblin" );
         }
         console.log( name.concat("ed, Difficulty:"), game.Villain.getDifficulty() );
         // turn on windows
         game.turnOnItems( game.windowArray );
         game.resetBoard();
+        if( rando(2) == 1){
+            game.setPrompt( game.Villain.getName().concat( " got the drop on you", " " ) );
+            game.villainsTurn();
+        }else{
+            game.setPrompt( "Protect the city", " " );
+        }
+
     }
     gameOver(){        
         this.turnOff();
@@ -322,6 +344,8 @@ class gameTemplate {
     }
     resetGame(){
         this.turnOff();
+        game.hideJonah();
+        game.setPrompt("Protect the city again?", "Click to play!");
         // set game in-progress to false
         // remove select, remove gwen, morales, cosmic, spidey, oh, add empty
         this.windowArray.forEach( ( window ) => {
@@ -334,10 +358,12 @@ class gameTemplate {
         game.gameInProgress = false;
     }
     setHero( id ){
+        game.hideJonah()
         game.heroMarkerClass = id;
         console.log( "Setting ", id );
         game.hideExcept( game.heroSelectArray, id );
         game.turnOnItems( game.villainSelectArray );
+        game.setPrompt( "Select Villain/Difficulty", "(Higher = harder)" );
     }
     clean( window ){
         window.classList.remove( "gwen", "morales", "cosmic", "spidey", "oh", "select", "empty" );
@@ -407,7 +433,7 @@ class gameTemplate {
         }
     }
     unhide( passedArray=[] ){
-        console.log( "unhiding ");
+        //console.log( "unhiding ");
         passedArray.forEach( ( item ) => {
             item.classList.remove("hide-me");
         } );
