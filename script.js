@@ -1,60 +1,3 @@
-const cosmic = 0;
-const morales = 1;
-const gwen = 2;
-const spidey =3;
-
-const venom = 0;
-const sandman = 1;
-const blackCat = 2;
-const goblin = 3;
-
-const hero = "X";
-const vill = "O";
-
-const win_conditions2d = [
-    [0,1,2],
-    [3,4,5],
-    [6,7,8],
-    [0,3,6],
-    [1,4,7],
-    [2,5,8],
-    [0,4,8],
-    [2,4,6]
-];
-
-function createObject( type='div', id="", classes=[]){
-    let object = document.createElement( type );
-    object.setAttribute( 'id', id );
-    object.classList.add( ...classes );
-    console.log('Creating object: type:', type, " id:", id );
-    return object;
-}
-function createLink({ text="A Link", address="https://google.com", classes=[], id="" }){
-    const newLink = document.createElement( 'a' );
-    if( id!=""){
-        newLink.setAttribute( id );
-    }
-    newLink.classList.add( ...classes );
-    newLink.appendChild( document.createTextNode( text ) );
-    newLink.href = address;
-    newLink.target = "_blank";
-    newLink.rel = "noreferrer noopener";
-    return newLink;
-}
-function appendChildren({ parent, children=[]}){
-    children.forEach((child) => {
-        parent.appendChild( child )
-    });
-
-}
-function clearElement(item){
-    var first = item.firstElementChild;
-    while(first){
-        first.remove();
-        first = item.firstElementChild;
-    }
-}
-
 function winning( board, player ){
     let test = false;
     win_conditions2d.forEach( ( condition ) => {
@@ -63,21 +6,26 @@ function winning( board, player ){
         } 
     });
     return test;
-}
+} // end winning
 
 class villain{
     constructor(  ){
-        self.difficulty = goblin;
+        this.difficulty = goblin;
+        this.name = "";
 
-    }
+    } // end constructor
 
-    setDifficulty( difficulty ){
-        self.difficulty = difficulty;
+    setDifficulty( difficulty, name ){
+        this.difficulty = difficulty;
+        this.name = name;
+    } // end setDifficulty
+    getDifficulty(){
+        return this.difficulty;
     }
 
     play( board ){
-        let villainSelect; 
-        
+        let villainSelect = 0; 
+
         if( this.difficulty == venom ){
             villainSelect = this.playMiniMax({ thisBoard:board, thisPlayer:vill, desiredDepth:4 }).index;
         }else if( this.difficulty == blackCat ){
@@ -87,18 +35,17 @@ class villain{
         }else{
             villainSelect = this.randomPlay( board );
         }
-    }
-
-
+        return villainSelect;
+    } // end play
 
     randomPlay( board ){
         let optionList = this.findEmpties( board );
         return optionList[ rando( optionList.length ) ]
-    }
+    } // end randomPlay
 
     findEmpties( board ){
         return  board.filter( slot => slot != "O" && slot != "X");
-    }
+    } // end findEmpties
 
     playMiniMax({ thisBoard, thisPlayer, desiredDepth=Infinity, currentDepth=0 }){
         let newDepth = currentDepth + 1;
@@ -131,9 +78,9 @@ class villain{
             moves.push( move );
         }
         let bestMove;
-        if( thisPlayer = villain ){ 
+        if( thisPlayer = vill ){ 
             let bestScore = -10000;
-            for( i = 0; i< moves.length; i++ ){
+            for( let i = 0; i< moves.length; i++ ){
                 if( moves[i].score > bestScore ){
                     bestScore = moves[i].score;
                     bestMove = i;
@@ -141,7 +88,7 @@ class villain{
             }
         }else{  
             let bestScore = 10000;
-            for( i = 0; i< moves.length; i++ ){
+            for( let i = 0; i< moves.length; i++ ){
                 if(moves[i].score < bestScore){
                     bestScore = moves[i].score;
                     bestMove = i;
@@ -150,33 +97,40 @@ class villain{
         }
         return moves[ bestMove ];
     } // end playMiniMax
-}
 
-
-
+    getName(){
+        return this.name;
+    }
+} // end class villain
 
 
 class gameTemplate {
     constructor(){
+        this.slots = [];
+        this.gameInProgress = false;
+        
         clearElement(document.body);
         this.header = createObject( 'h1', "gameTitle", ["title", "transition-item"] );
         this.header.appendChild( document.createTextNode("Catch the Spidey - by the - Toe") );
         document.body.appendChild(this.header);
         // Communication Area
-        this.promptBox = createObject( 'div', "prompt", ["transition-item"] );
+        this.promptBox = createObject( 'div', "prompt", ["select", "transition-item"] );
         this.actionPrompt = createObject( 'span', "action-prompt", [ "transition-item"] );
 
         this.jonah = createObject( 'img', "jonah", ["character","hide-me", "transition-item"] );
         this.jonah.src = "img/Jonah.png";
 
         this.promptBox.appendChild( this.jonah );
-        this.actionPrompt.appendChild( document.createTextNode("Pick your hero.") );
+        this.actionPrompt.appendChild( document.createTextNode("Prevent enemy from gettng 3 in a row, causing structural collapse.") );
         this.promptBox.appendChild( this.actionPrompt );       
+        this.promptBox.addEventListener( "click", this.promptBoxClicked, false );
         document.body.appendChild( this.promptBox);
+
         // Board area
         this.windowArray = [];
         this.heroSelectArray = [];
         this.villainSelectArray = [];
+        this.heroMarkerClass = "";
 
         this.boardArea = createObject( 'div', "board-area", ["board-area", "transition-item"] );
         this.heroSelect = createObject( 'div', "hero-select", ["characters", "transition-item"] );
@@ -194,7 +148,9 @@ class gameTemplate {
 
         for( let i=0; i<4; i++ ){
             this.heroSelect.appendChild( this.heroSelectArray[i] );
+            this.heroSelectArray[i].addEventListener( "click", this.heroClicked, false );
             this.villainSelect.appendChild( this.villainSelectArray[i] );
+            this.villainSelectArray[i].addEventListener( "click", this.villainClicked, false );
         }
 
         this.building = createObject( 'div', "board", ["board", "transition-item"]);
@@ -226,9 +182,13 @@ class gameTemplate {
             this.headsLink
         ]});
         document.body.appendChild( this.footer );
-        //this.damageWindows( this.windowArray[1] );
+        this.Villain = new villain;
+        this.turnOff();
+        console.log( this.slots );
+        //this.turnOnItems( this.windowArray );
+        this.turnOnItem( this.promptBox );
     }
-    
+
     showJonah(){
         this.jonah.classList.remove('hide-me');
     }
@@ -239,18 +199,220 @@ class gameTemplate {
     buildWindows(){
         for( let i=0; i<9; i++){
             this.windowArray[i] = createObject( "div", i, [ "window","empty", "transition-item" ] );
-            this.building.appendChild( this.windowArray[i] );
-        }       
+            this.slots[i]=i;
+        }
+        this.windowArray.forEach( ( window ) => {
+            window.addEventListener( 'click', this.windowClicked, false );
+            this.building.appendChild( window );
+        });
     }
-    damageWindows( window ){    // pass villain.
+    windowClicked( event ){
+        console.log( "Clicked window:", event.currentTarget.id );
+        let window = event.currentTarget;
+        if( game.isEnabled( window ) ){//if( event.currentTarget.classList.contains("select") ){
+            console.log( "playable" );
+            game.protectWindow( Number(window.id) );
+            if( winning( game.slots, hero ) ){
+                console.log( 'You saved the building and captured the villain.');
+                game.gameOver();
+            }else if( winning( game.slots, vill ) ){
+                console.log( 'Tragedy struck today.' );
+                game.gameOver();
+            }else if( game.Villain.findEmpties( [...game.slots] ).length < 1 ){
+                console.log("Well, the building's still standing.");
+                game.gameOver();
+            }else{
+                let x = game.Villain.play( [...game.slots] );
+                console.log( game.Villain.getName(), "plays", x );
+                game.slots[x] = vill;
+                game.damageWindows( game.windowArray[x] );
+            }
+            
+        }
+    }
+    
+    whosWinning(){
+        if( winning( game.slots, hero ) ){
+            console.log( 'You saved the building and captured the villain.');
+        }else if( winning( game.slots, vill ) ){
+            console.log( 'Tragedy struck today.' )
+        }else if( game.Villain.findEmpties( [...game.slots] ).length < 1 ){
+
+        }
+    }
+    promptBoxClicked( event ){
+        if( game.isEnabled( event.currentTarget ) ){//if( this.promptBox.classList.contains("select") ){
+            if( game.gameInProgress == true ){
+                game.resetGame();
+                console.log( "In Progress? ", game.gameInProgress, ", Reset");
+            }else{
+                game.turnOff( this.promptBox ) ;
+                //console.log("Select Hero");
+                game.selectYourHero();
+                game.gameInProgress = true;
+            }
+        }else{
+            console.log( event.currentTarget.id, " not enabled.")
+        }
+    }
+    selectYourHero(){
+        // turns off everything, then enables all heroes
+        console.log("Select your hero");
+        this.turnOff();
+        this.turnOnItems( this.heroSelectArray );
+    }
+    heroClicked( event ){
+        // set current hero string to corresponding class string
+        // remove select from all heroes, add select to all villains
+        // hide all but selected hero
+        if( game.isEnabled( event.currentTarget) ){
+            game.setHero( event.currentTarget.id );
+        }else{
+            console.log( event.currentTarget.id, " not enabled.")
+        }
+    }
+    villainClicked( event ){
+        if( game.isEnabled( event.currentTarget) ){
+            game.startGame( event.currentTarget.id );
+        }else{
+            console.log( event.currentTarget.id, " not enabled.")
+        }
+    }
+
+    damageWindows( window ){    
         window.classList.add( "hit" );
+        window.classList.remove("empty", "select" );
         setTimeout( function(){ 
             window.classList.add( "oh" )
             window.classList.remove( "hit" ) 
         }, "300" );
-        console.log("damage");
+        console.log( "Window ", window.id, " damaged");
     }
-} // end class
+    protectWindow( num ){
+        game.windowArray[num].classList.remove( "select", "empty" );
+        game.windowArray[num].classList.add( game.heroMarkerClass );
+        game.slots[num] = hero;
+    }
+    // ?
+    userPlay(){
+        // event listener response
+    }
+    startGame( name ){
+        // if game not in progress, reset board and set game to in-progress
+        game.hideExcept( game.villainSelectArray, name );
+        game.turnOff( game.villainSelectArray );
+        if( name == "venom-select" ){
+            game.Villain.setDifficulty( venom, "Venom" ); 
+            
+        }else if( name == "sandman-select" ){
+            game.Villain.setDifficulty( sandman, "Sandman" ); 
+        }else if( name == "black-cat-select" ){
+            game.Villain.setDifficulty( blackCat, "Black Cat" ); 
+        }else{
+            game.Villain.setDifficulty( goblin, "Goblin" );
+        }
+        console.log( name.concat("ed, Difficulty:"), game.Villain.getDifficulty() );
+        // turn on windows
+        game.turnOnItems( game.windowArray );
+        game.resetBoard();
+    }
+    gameOver(){        
+        this.turnOff();
+        this.turnOnItem( this.promptBox );
+    }
+    resetGame(){
+        this.turnOff();
+        // set game in-progress to false
+        // remove select, remove gwen, morales, cosmic, spidey, oh, add empty
+        this.windowArray.forEach( ( window ) => {
+            game.clean( window ); //window.classList.remove( "gwen", "morales", "cosmic", "spidey", "oh", "select" )
+            window.classList.add("empty")
+        } );
+        game.unhide( game.heroSelectArray );
+        game.unhide( game.villainSelectArray );
+        this.turnOnItem( this.promptBox );
+        game.gameInProgress = false;
+    }
+    setHero( id ){
+        game.heroMarkerClass = id;
+        console.log( "Setting ", id );
+        game.hideExcept( game.heroSelectArray, id );
+        game.turnOnItems( game.villainSelectArray );
+    }
+    clean( window ){
+        window.classList.remove( "gwen", "morales", "cosmic", "spidey", "oh", "select", "empty" );
+    }
+    resetWindows(){
+        this.windowArray.forEach( ( window ) => {
+            window.classList.remove( "gwen", "morales", "cosmic", "spidey", "oh", "select" )
+            window.classList.add("empty")
+        } );
+    }
+    matchBoards(){
+        resetWindows();
+        for(let i=0;i<9;i++){
+            game.clean( windowArray[i] );
+            if( slots[i] == hero ){
+                game.windowArray[i].classList.add( this.heroMarkerClass );
+            }else if( slots[i] == vill ){
+                game.windowArray[i].classList.add( "oh" );
+            }else{
+                game.windowArray[i].classList.add( "empty" );
+            }
+        }
+    }
+    isEnabled( item ){
+        if( item.classList.contains("select") ){
+            return true;
+        }else{
+            return false;
+        }
+    }
+    turnOff(){
+        this.turnOffItems( this.windowArray );
+        this.turnOffItem( this.promptBox );
+        this.turnOffItems( this.villainSelectArray );
+        this.turnOffItems( this.heroSelectArray );
+    }
+    turnOffItem( item ){
+        item.classList.remove("select");
+    }
+    turnOffItems( items=[] ){
+        items.forEach( ( item ) => {
+            item.classList.remove("select")
+        } );
+    }
+    turnOnItem( item ){
+        item.classList.add("select");
+    }
+    turnOnItems( items=[] ){
+        items.forEach( ( item ) => {
+            item.classList.add("select")
+        } );
+    }
+    resetBoard(){
+        for( let i = 0; i < 9; i++ ){
+            game.slots[i] = i;
+        }
+    }
+    getBoard(){
+        return [...game.slots];
+    }
+    hideExcept( passedArray=[], passedID ){
+        let passedLength = passedArray.length;
+        for( let i=0; i < passedLength; i++){
+            if( passedArray[i].id != passedID ){
+                passedArray[i].classList.add( "hide-me" );
+            }
+        }
+    }
+    unhide( passedArray=[] ){
+        console.log( "unhiding ");
+        passedArray.forEach( ( item ) => {
+            item.classList.remove("hide-me");
+        } );
+    }
+} // end class gameTemplate
 
 const game = new gameTemplate;
 /*
