@@ -1,0 +1,67 @@
+:root{
+    --color: #ffffff;
+    --character-width: min(10vh,10vw);
+    --character-height: min(10vh,10vw);
+    --slot-size: min(20vh, 20vw);
+    --text-size: min(2vh,2vw);
+    --border-radius: min(2.5vh, 2.5vw);
+    --board-colors: rgb(86, 101, 101);
+    --mind-the-gap: min(1vh,1vw);
+}
+
+body{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.board{
+    background-color: darkslategray;
+    display:grid;
+    gap: 1vh;
+    padding: 1vh;
+    border-radius: var(--border-radius);
+    grid-template-columns: var(--slot-size) var(--slot-size) var(--slot-size);
+    grid-template-rows: var(--slot-size) var(--slot-size) var(--slot-size);
+}
+
+#announcements{
+    background-color: gray;
+    display:flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.slot{
+    height: var(--slot-size);
+    width: var(--slot-size);
+    border: 1px solid gold;
+}
+
+.ex{
+    background-color: blue;
+}
+.oh{
+    background-color: red;
+}
+
+.select{
+    -webkit-transition: 300ms linear 0s;
+    -moz-transition: 300ms linear 0s;
+    -o-transition: 300ms linear 0s;
+    transition: 300ms linear 0s;
+}
+.select:hover, .select:focus{
+    box-shadow: calc(var(--mind-the-gap)*-.5) 0 calc(var(--mind-the-gap)*.5) blue,
+                0 calc(var(--mind-the-gap)*.5) calc(var(--mind-the-gap)*.5) red;
+    transform: translate( var(--mind-the-gap), calc(var(--mind-the-gap)*-1) );
+}
+
+.blue{
+    background-color: blue;
+}
+.red{
+    background-color: red;
+}
