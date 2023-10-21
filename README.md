@@ -1,6 +1,6 @@
 # TOP-TicTacToe
 
-(Play the game)[https://enginma9.github.io/TOP-TicTacToe/]  
+[Play the game](https://enginma9.github.io/TOP-TicTacToe/)  
 
 Submission for the Odin Project  
 Uses an adjusted version of the minimax function for the ai.  
